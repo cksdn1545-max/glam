@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>펜션 여행 준비물 체크리스트</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo',
+                 'Noto Sans KR', sans-serif;
+    background: #F0F4F8;
+    color: #2C3E50;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #2C4E6E 0%, #3A6186 100%);
+    color: white;
+    padding: 28px 20px 24px;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .header p  { font-size: 13px; opacity: 0.8; }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    background: white;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label { font-size: 13px; font-weight: 600; color: #2C4E6E; }
+  .progress-count { font-size: 13px; color: #7F8C9A; }
+  .progress-bar-bg {
+    background: #E8EEF4;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2C4E6E, #4A7FA5);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* ── Content ── */
+  .content { max-width: 600px; margin: 0 auto; padding: 16px 16px 0; }
+
+  /* ── Section card ── */
+  .section-card {
+    background: white;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #EEF3F8;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-icon { font-size: 20px; }
+  .section-title { font-size: 15px; font-weight: 700; color: #2C4E6E; }
+  .section-meta { font-size: 11px; color: #7F8C9A; margin-top: 2px; }
+  .section-toggle {
+    font-size: 18px;
+    color: #7F8C9A;
+    transition: transform 0.2s;
+  }
+  .section-toggle.open { transform: rotate(180deg); }
+
+  .section-body { display: block; }
+  .section-body.collapsed { display: none; }
+
+  /* ── Item row ── */
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid #F0F4F8;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+  .item:last-child { border-bottom: none; }
+  .item:active { background: #F5F8FA; }
+
+  /* Custom checkbox */
+  .item-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid #CBD5E0;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    background: white;
+  }
+  .item-check .checkmark {
+    display: none;
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .item.checked .item-check {
+    background: #2C4E6E;
+    border-color: #2C4E6E;
+  }
+  .item.checked .item-check .checkmark { display: block; }
+  .item.checked .item-text { opacity: 0.4; text-decoration: line-through; }
+
+  .item-content { flex: 1; }
+  .item-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2C3E50;
+    transition: opacity 0.2s;
+  }
+  .item-desc {
+    font-size: 12px;
+    color: #95A5A6;
+    margin-top: 2px;
+  }
+
+  /* Must-check badge */
+  .must-badge {
+    display: inline-block;
+    background: #FDECEA;
+    color: #E53E3E;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* ── All done banner ── */
+  .done-banner {
+    display: none;
+    background: linear-gradient(135deg, #2C4E6E, #4A7FA5);
+    color: white;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 14px;
+    animation: pop 0.3s ease;
+  }
+  .done-banner.show { display: block; }
+  .done-banner .emoji { font-size: 32px; margin-bottom: 8px; }
+  .done-banner p { font-size: 15px; font-weight: 600; }
+  .done-banner small { font-size: 12px; opacity: 0.8; }
+
+  @keyframes pop {
+    0%   { transform: scale(0.95); opacity: 0; }
+    100% { transform: scale(1);    opacity: 1; }
+  }
+
+  /* ── Reset button ── */
+  .reset-btn {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 20px;
+    padding: 13px;
+    background: white;
+    border: 1.5px solid #CBD5E0;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #7F8C9A;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .reset-btn:active { background: #F0F4F8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">TRIP PLAN</div>
+  <h1>🏕️ 펜션 준비물 체크리스트</h1>
+  <p>친구 5명 · 1박 2일 · 수영 + 바베큐</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-top">
+    <span class="progress-label">준비 완료</span>
+    <span class="progress-count" id="progressCount">0 / 0</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="done-banner" id="doneBanner">
+    <div class="emoji">🎉</div>
+    <p>모든 준비물 완료!</p>
+    <small>즐거운 여행 되세요 ☀️</small>
+  </div>
+
+  <!-- 기본 생활용품 -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <span class="section-icon">🧴</span>
+        <div>
+          <div class="section-title">기본 생활용품</div>
+          <div class="section-meta">세면 · 의류 · 개인용품</div>
+        </div>
+      </div>
+      <span class="section-toggle open">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">칫솔 · 치약<span class="must-badge">필수</span></div>
+          <div class="item-desc">개인 세면도구 기본</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">샴푸 · 바디워시<span class="must-badge">필수</span></div>
+          <div class="item-desc">펜션 미비치 시 필요</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">수건<span class="must-badge">필수</span></div>
+          <div class="item-desc">일반용 + 수영용 별도 챙기기</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">여벌 옷 · 속옷<span class="must-badge">필수</span></div>
+          <div class="item-desc">최소 2벌 (수영 후 갈아입을 것 포함)</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">충전기<span class="must-badge">필수</span></div>
+          <div class="item-desc">폰, 보조배터리 충전기</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">잠옷 · 슬리퍼</div>
+          <div class="item-desc">실내 편의용</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">개인 의약품</div>
+          <div class="item-desc">평소 복용약, 알레르기약 등</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 수영 준비물 -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <span class="section-icon">🏊</span>
+        <div>
+          <div class="section-title">수영 준비물</div>
+          <div class="section-meta">수영장 · 물놀이</div>
+        </div>
+      </div>
+      <span class="section-toggle open">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">수영복<span class="must-badge">필수</span></div>
+          <div class="item-desc">래시가드도 함께 챙기면 좋음</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">방수 선크림<span class="must-badge">필수</span></div>
+          <div class="item-desc">SPF50+ 워터프루프 필수</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">큰 수건 (수영용)<span class="must-badge">필수</span></div>
+          <div class="item-desc">물놀이 전용으로 별도 준비</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">물안경</div>
+          <div class="item-desc">있으면 더 즐겁게!</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">아쿠아슈즈</div>
+          <div class="item-desc">자갈·미끄럼 방지용</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">수영 모자</div>
+          <div class="item-desc">선택 (머리카락 보호)</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">튜브 · 구명조끼</div>
+          <div class="item-desc">⚠️ 펜션에 있는지 사전 확인!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 공용 아이템 -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <span class="section-icon">🎵</span>
+        <div>
+          <div class="section-title">공용 아이템</div>
+          <div class="section-meta">같이 쓰면 좋은 것들</div>
+        </div>
+      </div>
+      <span class="section-toggle open">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">블루투스 스피커</div>
+          <div class="item-desc">분위기 메이커, 방수 제품 추천</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">멀티탭</div>
+          <div class="item-desc">여러 명 동시 충전 필수</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">보드게임 · 카드</div>
+          <div class="item-desc">실내 놀거리</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">돗자리</div>
+          <div class="item-desc">야외 휴식 · 바베큐 때 유용</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">랜턴 · 헤드라이트</div>
+          <div class="item-desc">야간 야외 활동 대비</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비상 대비 -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <span class="section-icon">🩹</span>
+        <div>
+          <div class="section-title">비상 대비</div>
+          <div class="section-meta">안전 · 응급</div>
+        </div>
+      </div>
+      <span class="section-toggle open">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">상비약<span class="must-badge">필수</span></div>
+          <div class="item-desc">타이레놀, 소화제, 밴드</div>
+        </div>
+      </div>
+      <div class="item must" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">모기약 · 버물리<span class="must-badge">필수</span></div>
+          <div class="item-desc">여름 야외 필수품</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">우산 · 우비</div>
+          <div class="item-desc">날씨 변동 대비</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">보조배터리</div>
+          <div class="item-desc">야외 활동 중 방전 대비</div>
+        </div>
+      </div>
+      <div class="item" onclick="toggle(this)">
+        <div class="item-check"><span class="checkmark">✓</span></div>
+        <div class="item-content">
+          <div class="item-text">여분 현금</div>
+          <div class="item-desc">비상 결제용</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div style="max-width:600px;margin:0 auto;padding:0 16px;">
+  <button class="reset-btn" onclick="resetAll()">↺ 체크 전체 초기화</button>
+</div>
+
+<script>
+  function toggle(el) {
+    el.classList.toggle('checked');
+    updateProgress();
+  }
+
+  function toggleSection(header) {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('.section-toggle');
+    body.classList.toggle('collapsed');
+    arrow.classList.toggle('open');
+  }
+
+  function updateProgress() {
+    const all     = document.querySelectorAll('.item');
+    const checked = document.querySelectorAll('.item.checked');
+    const mustItems    = document.querySelectorAll('.item.must');
+    const mustChecked  = document.querySelectorAll('.item.must.checked');
+
+    const total = all.length;
+    const done  = checked.length;
+    const pct   = total ? Math.round(done / total * 100) : 0;
+
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + total;
+
+    const banner = document.getElementById('doneBanner');
+    if (done === total && total > 0) {
+      banner.classList.add('show');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      banner.classList.remove('show');
+    }
+
+    // Highlight unchecked must-items in red if partially done
+    mustItems.forEach(item => {
+      const check = item.querySelector('.item-check');
+      if (!item.classList.contains('checked')) {
+        check.style.borderColor = '#E53E3E';
+      } else {
+        check.style.borderColor = '';
+      }
+    });
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.item.checked').forEach(el => el.classList.remove('checked'));
+    document.querySelectorAll('.item-check').forEach(el => el.style.borderColor = '');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Init
+  updateProgress();
+</script>
+</body>
+</html>
